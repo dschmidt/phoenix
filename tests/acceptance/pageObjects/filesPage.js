@@ -298,7 +298,8 @@ module.exports = {
       selector: '#new-file-dialog'
     },
     newFolderInput: {
-      selector: '#new-folder-input'
+      selector: "//div[@id='new-folder-input']//input[@type='text']",
+      locateStrategy: 'xpath'
     },
     newFileInput: {
       selector: "//div[@id='new-file-dialog']//input[@type='text']",
