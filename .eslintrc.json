@@ -8,7 +8,7 @@
         "standard",
         "plugin:vue/essential",
         "plugin:prettier/recommended"
-        ],
+    ],
     "parserOptions": {
         "parser": "babel-eslint",
         "sourceType": "module"
