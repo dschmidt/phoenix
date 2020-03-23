@@ -1,6 +1,6 @@
 import { Log, User, UserManager, WebStorageStateStore } from 'oidc-client'
 
-export function initVueAuthenticate (config) {
+export function initVueAuthenticate(config) {
   if (config) {
     const store = new WebStorageStateStore({
       prefix: 'oc_oAuth',
@@ -59,15 +59,15 @@ export function initVueAuthenticate (config) {
     Log.logger = console
     Log.level = openIdConfig.logLevel
 
-    mgr.events.addUserSignedOut(function () {
+    mgr.events.addUserSignedOut(function() {
       console.log('UserSignedOut：', arguments)
     })
 
     return {
-      authenticate () {
+      authenticate() {
         return mgr.signinRedirect()
       },
-      getToken () {
+      getToken() {
         const storageString = sessionStorage.getItem('oc_oAuth' + mgr._userStoreKey)
         if (storageString) {
           const user = User.fromStorageString(storageString)
@@ -78,17 +78,17 @@ export function initVueAuthenticate (config) {
         }
         return null
       },
-      isAuthenticated () {
+      isAuthenticated() {
         return this.getToken() !== null
       },
-      logout () {
+      logout() {
         return mgr.signoutRedirect()
       },
-      clearLoginState () {
+      clearLoginState() {
         return mgr.removeUser()
       },
       mgr: mgr,
-      events () {
+      events() {
         return mgr.events
       }
     }

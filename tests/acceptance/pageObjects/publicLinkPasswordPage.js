@@ -1,5 +1,5 @@
 module.exports = {
-  url: function () {
+  url: function() {
     return this.api.launchUrl
   },
   elements: {
@@ -25,14 +25,12 @@ module.exports = {
        *
        * @param {string} password
        */
-      submitPublicLinkPassword: async function (password) {
-        await this
-          .waitForElementVisible('@passwordInput')
+      submitPublicLinkPassword: async function(password) {
+        await this.waitForElementVisible('@passwordInput')
           .setValue('@passwordInput', password)
           .click('@passwordSubmitButton')
 
-        return this
-          .page.FilesPageElement.filesList()
+        return this.page.FilesPageElement.filesList()
           .waitForElementPresent({ selector: '@filesListProgressBar', abortOnFailure: false }) // don't fail if we are too late
           .waitForElementNotPresent('@filesListProgressBar')
       },
@@ -40,9 +38,8 @@ module.exports = {
        * submits the public link password input form
        * this is made for those scenarios where we submit wrong password in previous steps and webUI doesn't navigate to files-page
        */
-      submitLinkPasswordForm: function () {
-        return this
-          .initAjaxCounters()
+      submitLinkPasswordForm: function() {
+        return this.initAjaxCounters()
           .waitForElementVisible('@passwordInput')
           .click('@passwordSubmitButton')
           .waitForOutstandingAjaxCalls()
@@ -52,16 +49,14 @@ module.exports = {
        *
        * @return {Promise<string>}
        */
-      getResourceAccessDeniedMsg: async function () {
+      getResourceAccessDeniedMsg: async function() {
         let message
-        await this
-          .waitForElementVisible('@passwordSubmitButton')
-          .getText(
-            '@resourceProtectedText',
-            (result) => {
-              message = result.value
-            }
-          )
+        await this.waitForElementVisible('@passwordSubmitButton').getText(
+          '@resourceProtectedText',
+          result => {
+            message = result.value
+          }
+        )
         return message
       }
     }

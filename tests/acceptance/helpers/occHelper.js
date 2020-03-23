@@ -8,20 +8,25 @@ const { join } = require('./path')
  *
  * @param {Array} args
  */
-exports.runOcc = function (args) {
+exports.runOcc = function(args) {
   const headers = httpHelper.createOCSRequestHeaders('admin')
   const params = new URLSearchParams()
   params.append('command', args.join(' '))
-  const apiURL = join(backendHelper.getCurrentBackendUrl(), '/ocs/v2.php/apps/testing/api/v1/occ?format=json')
+  const apiURL = join(
+    backendHelper.getCurrentBackendUrl(),
+    '/ocs/v2.php/apps/testing/api/v1/occ?format=json'
+  )
   return fetch(apiURL, {
     headers,
     body: params,
     method: 'POST'
-  }).then(res => {
-    httpHelper.checkStatus(res, 'Failed while executing occ command')
-    return res.json()
-  }).then(res => {
-    httpHelper.checkOCSStatus(res, 'Failed while executing occ command')
-    return res
   })
+    .then(res => {
+      httpHelper.checkStatus(res, 'Failed while executing occ command')
+      return res.json()
+    })
+    .then(res => {
+      httpHelper.checkOCSStatus(res, 'Failed while executing occ command')
+      return res
+    })
 }

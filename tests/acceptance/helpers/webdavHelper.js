@@ -13,9 +13,14 @@ const occHelper = require('../helpers/occHelper')
  * @param {string} element
  * @param {string} server - (REMOTE/LOCAL) server to use for dav path
  */
-exports.createDavPath = function (userId, element) {
+exports.createDavPath = function(userId, element) {
   const replaceEncoded = encodeURIComponent(element).replace(/%2F/g, '/')
-  return join(backendHelper.getCurrentBackendUrl(), '/remote.php/dav/files/', userId, replaceEncoded)
+  return join(
+    backendHelper.getCurrentBackendUrl(),
+    '/remote.php/dav/files/',
+    userId,
+    replaceEncoded
+  )
 }
 
 /**
@@ -23,13 +28,10 @@ exports.createDavPath = function (userId, element) {
  * @param {string} userId
  * @param {string} file
  */
-exports.download = function (userId, file) {
+exports.download = function(userId, file) {
   const headers = httpHelper.createAuthHeader(userId)
   const davPath = exports.createDavPath(userId, file)
-  return fetch(
-    davPath,
-    { method: 'GET', headers: headers }
-  )
+  return fetch(davPath, { method: 'GET', headers: headers })
     .then(res => httpHelper.checkStatus(res, 'Could not download file.'))
     .then(res => res.text())
 }
@@ -39,13 +41,10 @@ exports.download = function (userId, file) {
  * @param {string} userId
  * @param {string} file
  */
-exports.delete = function (userId, file) {
+exports.delete = function(userId, file) {
   const headers = httpHelper.createAuthHeader(userId)
   const davPath = exports.createDavPath(userId, file)
-  return fetch(
-    davPath,
-    { method: 'DELETE', headers: headers }
-  )
+  return fetch(davPath, { method: 'DELETE', headers: headers })
     .then(res => httpHelper.checkStatus(res, 'Could not delete file ' + file))
     .then(res => res.text())
 }
@@ -57,14 +56,11 @@ exports.delete = function (userId, file) {
  * @param {string} fromName
  * @param {string} toName
  */
-exports.move = function (userId, fromName, toName) {
+exports.move = function(userId, fromName, toName) {
   const headers = httpHelper.createAuthHeader(userId)
   headers.Destination = exports.createDavPath(userId, toName)
   const davPath = exports.createDavPath(userId, fromName)
-  return fetch(
-    davPath,
-    { method: 'MOVE', headers: headers }
-  )
+  return fetch(davPath, { method: 'MOVE', headers: headers })
     .then(res => httpHelper.checkStatus(res, 'Could not move file.'))
     .then(res => res.text())
 }
@@ -76,7 +72,7 @@ exports.move = function (userId, fromName, toName) {
  * @param {array} properties
  * @param {number} folderDepth
  */
-exports.propfind = function (path, userId, properties, folderDepth = 1) {
+exports.propfind = function(path, userId, properties, folderDepth = 1) {
   const headers = httpHelper.createAuthHeader(userId)
   headers.Depth = folderDepth
   const davPath = join(backendHelper.getCurrentBackendUrl(), '/remote.php/dav', path)
@@ -91,11 +87,7 @@ exports.propfind = function (path, userId, properties, folderDepth = 1) {
                 xmlns:ocs="http://open-collaboration-services.org/ns">
                 <d:prop>${propertyBody}</d:prop>
                 </d:propfind>`
-  return fetch(
-    davPath,
-    { method: 'PROPFIND', headers, body }
-  )
-    .then(res => res.text())
+  return fetch(davPath, { method: 'PROPFIND', headers, body }).then(res => res.text())
 }
 
 /**
@@ -111,15 +103,20 @@ exports.propfind = function (path, userId, properties, folderDepth = 1) {
  *
  * @param {string} user
  */
-exports.getTrashBinElements = function (user, depth = 2) {
-  return new Promise((resolve) => {
-    exports.propfind(`/trash-bin/${user}`, user,
-      [
-        'oc:trashbin-original-filename',
-        'oc:trashbin-original-location',
-        'oc:trashbin-delete-timestamp',
-        'd:getlastmodified'
-      ], depth)
+exports.getTrashBinElements = function(user, depth = 2) {
+  return new Promise(resolve => {
+    exports
+      .propfind(
+        `/trash-bin/${user}`,
+        user,
+        [
+          'oc:trashbin-original-filename',
+          'oc:trashbin-original-location',
+          'oc:trashbin-delete-timestamp',
+          'd:getlastmodified'
+        ],
+        depth
+      )
       .then(str => {
         const trashData = convert.xml2js(str, { compact: true })['d:multistatus']['d:response']
         const trashItems = []
@@ -142,14 +139,13 @@ exports.getTrashBinElements = function (user, depth = 2) {
  * @param {string} user
  * @param {string} folderName
  */
-exports.createFolder = function (user, folderName) {
+exports.createFolder = function(user, folderName) {
   const headers = httpHelper.createAuthHeader(user)
   const davPath = exports.createDavPath(user, folderName)
-  return fetch(
-    davPath,
-    { method: 'MKCOL', headers: headers }
-  )
-    .then(res => httpHelper.checkStatus(res, `Could not create the folder "${folderName}" for user "${user}".`))
+  return fetch(davPath, { method: 'MKCOL', headers: headers })
+    .then(res =>
+      httpHelper.checkStatus(res, `Could not create the folder "${folderName}" for user "${user}".`)
+    )
     .then(res => res.text())
 }
 /**
@@ -159,14 +155,13 @@ exports.createFolder = function (user, folderName) {
  * @param {string} fileName
  * @param {string} contents
  */
-exports.createFile = function (user, fileName, contents = '') {
+exports.createFile = function(user, fileName, contents = '') {
   const headers = httpHelper.createAuthHeader(user)
   const davPath = exports.createDavPath(user, fileName)
-  return fetch(
-    davPath,
-    { method: 'PUT', headers: headers, body: contents }
-  )
-    .then(res => httpHelper.checkStatus(res, `Could not create the file "${fileName}" for user "${user}".`))
+  return fetch(davPath, { method: 'PUT', headers: headers, body: contents })
+    .then(res =>
+      httpHelper.checkStatus(res, `Could not create the file "${fileName}" for user "${user}".`)
+    )
     .then(res => res.text())
 }
 
@@ -176,44 +171,43 @@ exports.createFile = function (user, fileName, contents = '') {
  * @param {string} path
  * @param {string} userId
  * @param {array} requestedProps
-*/
-exports.getProperties = function (path, userId, requestedProps) {
+ */
+exports.getProperties = function(path, userId, requestedProps) {
   return new Promise((resolve, reject) => {
     const trimmedPath = normalize(path) // remove a leading slash
     const relativePath = `/files/${userId}/${trimmedPath}`
-    exports.propfind(relativePath, userId, requestedProps,
-      0)
-      .then(str => {
-        const response = JSON.parse(convert.xml2json(str, { compact: true }))
-        const receivedProps = _.get(
-          response,
-          "['d:multistatus']['d:response']['d:propstat']['d:prop']"
-        )
-        if (receivedProps === undefined) {
-          const errMsg = "Could not find 'd:prop' inside response. Received:\n"
-          return reject(new Error(errMsg + JSON.stringify(str)))
-        }
-        const properties = {}
-        requestedProps.map(propertyName => {
-          properties[propertyName] = receivedProps[propertyName]._text
-        })
-        return resolve(properties)
+    exports.propfind(relativePath, userId, requestedProps, 0).then(str => {
+      const response = JSON.parse(convert.xml2json(str, { compact: true }))
+      const receivedProps = _.get(
+        response,
+        "['d:multistatus']['d:response']['d:propstat']['d:prop']"
+      )
+      if (receivedProps === undefined) {
+        const errMsg = "Could not find 'd:prop' inside response. Received:\n"
+        return reject(new Error(errMsg + JSON.stringify(str)))
+      }
+      const properties = {}
+      requestedProps.map(propertyName => {
+        properties[propertyName] = receivedProps[propertyName]._text
       })
+      return resolve(properties)
+    })
   })
 }
 
-exports.getSkeletonFile = function (filename) {
-  return occHelper.runOcc(['config:system:get', 'skeletondirectory'])
+exports.getSkeletonFile = function(filename) {
+  return occHelper
+    .runOcc(['config:system:get', 'skeletondirectory'])
     .then(resp => resp.ocs.data.stdOut)
     .then(dir => {
       const headers = httpHelper.createAuthHeader('admin')
       const element = join(dir.trim(), filename)
-      const apiURL = join(client.globals.backend_url,
+      const apiURL = join(
+        client.globals.backend_url,
         '/ocs/v2.php/apps/testing/api/v1/file',
         `?file=${encodeURIComponent(element)}&absolute=true&format=json`
       )
-      return fetch(apiURL,
-        { method: 'GET', headers })
+      return fetch(apiURL, { method: 'GET', headers })
     })
     .then(res => res.json())
     .then(body => {
@@ -221,22 +215,22 @@ exports.getSkeletonFile = function (filename) {
     })
 }
 
-exports.uploadFileWithContent = function (user, content, filename) {
+exports.uploadFileWithContent = function(user, content, filename) {
   const headers = httpHelper.createAuthHeader(user)
   const apiURL = join(backendHelper.getCurrentBackendUrl(), '/remote.php/webdav/', filename)
-  return fetch(apiURL,
-    {
-      headers: {
-        'Content-Type': 'text/plain',
-        ...headers
-      },
-      method: 'PUT',
-      body: content
-    })
-    .then(res => httpHelper.checkStatus(res, 'Could not upload file' + filename + 'with content' + content))
+  return fetch(apiURL, {
+    headers: {
+      'Content-Type': 'text/plain',
+      ...headers
+    },
+    method: 'PUT',
+    body: content
+  }).then(res =>
+    httpHelper.checkStatus(res, 'Could not upload file' + filename + 'with content' + content)
+  )
 }
 
-exports.getFavouritedResources = function (user) {
+exports.getFavouritedResources = function(user) {
   const headers = httpHelper.createAuthHeader(user)
   const body = `<oc:filter-files  xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns">
                  <d:prop><d:resourcetype /></d:prop>
@@ -244,12 +238,11 @@ exports.getFavouritedResources = function (user) {
                      <oc:favorite>1</oc:favorite>
                  </oc:filter-rules>
                 </oc:filter-files>`
-  return fetch(client.globals.backend_url + `/remote.php/dav/files/${user}`,
-    {
-      method: 'REPORT',
-      headers,
-      body
-    })
+  return fetch(client.globals.backend_url + `/remote.php/dav/files/${user}`, {
+    method: 'REPORT',
+    headers,
+    body
+  })
     .then(res => res.text())
     .then(res => {
       const favData = convert.xml2js(res, { compact: true })['d:multistatus']['d:response']

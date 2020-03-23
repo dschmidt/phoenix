@@ -3,42 +3,61 @@
   <div :id="id" class="uk-height-1-1 uk-position-relative" @click="hideRowActionsDropdown">
     <div class="uk-flex uk-flex-column uk-height-1-1">
       <resize-observer @notify="$_resizeHeader" />
-      <oc-grid ref="headerRow" gutter="small" flex id="files-table-header" class="uk-padding-small" v-if="fileData.length > 0" key="files-list-results-existence">
+      <oc-grid
+        v-if="fileData.length > 0"
+        id="files-table-header"
+        ref="headerRow"
+        key="files-list-results-existence"
+        gutter="small"
+        flex
+        class="uk-padding-small"
+      >
         <div>
           <oc-checkbox
-            class="uk-margin-small-left"
             id="filelist-check-all"
-            :hideLabel="true"
+            class="uk-margin-small-left"
+            :hide-label="true"
             :label="labelSelectAllItems"
+            :value="selectedAll"
             @click.stop
             @change.native="toggleAll"
-            :value="selectedAll"
           />
         </div>
-        <slot name="headerColumns"/>
+        <slot name="headerColumns" />
         <div class="uk-margin-small-right oc-icon" />
       </oc-grid>
-      <div id="files-list-container" class="uk-flex-1 uk-overflow-auto" v-if="!loading">
+      <div v-if="!loading" id="files-list-container" class="uk-flex-1 uk-overflow-auto">
         <RecycleScroller
+          v-if="fileData.length"
+          v-slot="{ item, index, active }"
+          :key="fileData.length"
           class="uk-height-1-1"
           :items="fileData"
           :item-size="55"
-          v-slot="{ item, index, active }"
-          v-if="fileData.length"
-          :key="fileData.length"
         >
           <div
             :data-is-visible="active"
-            @click="selectRow(item, $event); hideRowActionsDropdown()"
+            @click="
+              selectRow(item, $event)
+              hideRowActionsDropdown()
+            "
           >
-            <oc-grid :ref="index === 0 ? 'firstRow' : null" gutter="small" flex class="uk-padding-small oc-border-top" :class="_rowClasses(item)" :id="'file-row-' + item.id">
+            <oc-grid
+              :id="'file-row-' + item.id"
+              :ref="index === 0 ? 'firstRow' : null"
+              gutter="small"
+              flex
+              class="uk-padding-small oc-border-top"
+              :class="_rowClasses(item)"
+            >
               <div>
                 <oc-checkbox
                   class="uk-margin-small-left"
-                  @click.stop @change.native="toggleFileSelect(item)"
                   :value="selectedFiles.indexOf(item) >= 0"
                   :label="labelSelectSingleItem(item)"
-                  :hideLabel="true"
+                  :hide-label="true"
+                  @click.stop
+                  @change.native="toggleFileSelect(item)"
                 />
               </div>
               <slot name="rowColumns" :item="item" :index="index" />
@@ -48,24 +67,24 @@
                   class="files-list-row-show-actions"
                   :disabled="$_actionInProgress(item)"
                   :aria-label="$gettext('Show file actions')"
-                  @click.stop="toggleRowActionsDropdown(item)"
                   variation="raw"
+                  @click.stop="toggleRowActionsDropdown(item)"
                 >
-                  <oc-icon
-                    name="more_vert"
-                    class="uk-text-middle"
-                    size="small"
-                  />
+                  <oc-icon name="more_vert" class="uk-text-middle" size="small" />
                 </oc-button>
               </div>
             </oc-grid>
           </div>
         </RecycleScroller>
-        <div v-else class="uk-position-center files-list-no-content-message" key="files-list-results-absence">
+        <div
+          v-else
+          key="files-list-results-absence"
+          class="uk-position-center files-list-no-content-message"
+        >
           <slot name="noContentMessage" />
         </div>
       </div>
-      <oc-grid gutter="large" class="uk-width-1-1 uk-padding-small" v-if="!loading">
+      <oc-grid v-if="!loading" gutter="large" class="uk-width-1-1 uk-padding-small">
         <slot name="footer" />
       </oc-grid>
     </div>
@@ -130,7 +149,7 @@ export default {
       default: true
     }
   },
-  data () {
+  data() {
     return {
       labelSelectAllItems: this.$gettext('Select all items'),
       labelSelectSingleItemText: this.$gettext('Select %{type} %{name}'),
@@ -141,31 +160,44 @@ export default {
   },
   computed: {
     ...mapState(['route']),
-    ...mapGetters('Files', ['selectedFiles', 'highlightedFile', 'activeFiles', 'quota',
-      'filesTotalSize', 'activeFilesCount', 'actionsInProgress']),
+    ...mapGetters('Files', [
+      'selectedFiles',
+      'highlightedFile',
+      'activeFiles',
+      'quota',
+      'filesTotalSize',
+      'activeFilesCount',
+      'actionsInProgress'
+    ]),
     ...mapGetters(['configuration']),
 
-    selectedAll () {
+    selectedAll() {
       return this.selectedFiles.length === this.fileData.length && this.fileData.length !== 0
     },
 
-    item () {
+    item() {
       return this.$route.params.item
     }
   },
   watch: {
-    compactMode (val) {
+    compactMode(val) {
       // sidebar opens, recalculate header sizes
       this.$_resizeHeader()
     }
   },
   methods: {
-    ...mapActions('Files', ['loadFolder', 'markFavorite',
-      'setHighlightedFile', 'setPublicLinkPassword',
-      'resetFileSelection', 'addFileSelection', 'removeFileSelection', 'toggleFileSelection'
+    ...mapActions('Files', [
+      'loadFolder',
+      'markFavorite',
+      'setHighlightedFile',
+      'setPublicLinkPassword',
+      'resetFileSelection',
+      'addFileSelection',
+      'removeFileSelection',
+      'toggleFileSelection'
     ]),
 
-    $_ocFilesFolder_getFolder () {
+    $_ocFilesFolder_getFolder() {
       let absolutePath
 
       if (this.configuration.rootFolder) {
@@ -179,45 +211,51 @@ export default {
         absolutePath: absolutePath,
         $gettext: this.$gettext,
         routeName: this.$route.name
-      }).then(() => {
-        const scrollTo = this.$route.query.scrollTo
-        if (scrollTo && this.activeFiles.length > 0) {
-          this.$nextTick(() => {
-            const file = this.activeFiles.find(item => item.name === scrollTo)
-            this.setHighlightedFile(file)
-            this.$scrollTo(`#file-row-${file.id}`, 500, {
-              container: '#files-list-container'
-            })
-          })
-        }
-      }).catch((error) => {
-        // password for public link shares is missing -> this is handled on the caller side
-        if (this.publicPage() && error.statusCode === 401) {
-          this.$router.push({
-            name: 'public-link',
-            params: {
-              token: this.$route.params.item
-            }
-          })
-          return
-        }
-        this.showMessage({
-          title: this.$gettext('Loading folder failed…'),
-          desc: error.message,
-          status: 'danger'
-        })
       })
+        .then(() => {
+          const scrollTo = this.$route.query.scrollTo
+          if (scrollTo && this.activeFiles.length > 0) {
+            this.$nextTick(() => {
+              const file = this.activeFiles.find(item => item.name === scrollTo)
+              this.setHighlightedFile(file)
+              this.$scrollTo(`#file-row-${file.id}`, 500, {
+                container: '#files-list-container'
+              })
+            })
+          }
+        })
+        .catch(error => {
+          // password for public link shares is missing -> this is handled on the caller side
+          if (this.publicPage() && error.statusCode === 401) {
+            this.$router.push({
+              name: 'public-link',
+              params: {
+                token: this.$route.params.item
+              }
+            })
+            return
+          }
+          this.showMessage({
+            title: this.$gettext('Loading folder failed…'),
+            desc: error.message,
+            status: 'danger'
+          })
+        })
     },
-    labelSelectSingleItem (item) {
-      return this.$gettextInterpolate(this.labelSelectSingleItemText, { name: item.name, type: item.type }, true)
+    labelSelectSingleItem(item) {
+      return this.$gettextInterpolate(
+        this.labelSelectSingleItemText,
+        { name: item.name, type: item.type },
+        true
+      )
     },
-    toggleFileFavorite (item) {
+    toggleFileFavorite(item) {
       this.markFavorite({
         client: this.$client,
         file: item
       })
     },
-    $_ocFileName (item) {
+    $_ocFileName(item) {
       if (this.$route.name === 'files-favorites') {
         const pathSplit = item.path.substr(1).split('/')
         if (pathSplit.length === 2) return `${pathSplit[pathSplit.length - 2]}/${item.basename}`
@@ -226,22 +264,22 @@ export default {
       return item.basename
     },
 
-    $_enabledActions (item) {
+    $_enabledActions(item) {
       return this.actions.filter(action => this.$_isActionEnabled(item, action))
     },
 
-    $_isActionEnabled (item, action) {
+    $_isActionEnabled(item, action) {
       if (this.isActionEnabled && this.isActionEnabled(item, action)) {
         return true
       }
       return false
     },
 
-    $_actionInProgress (item) {
+    $_actionInProgress(item) {
       return this.actionsInProgress.some(itemInProgress => itemInProgress.id === item.id)
     },
 
-    $_disabledActionTooltip (item) {
+    $_disabledActionTooltip(item) {
       if (this.$_actionInProgress(item)) {
         if (item.type === 'folder') {
           return this.$gettext('There is currently an action in progress for this folder')
@@ -252,13 +290,13 @@ export default {
 
       return null
     },
-    _rowClasses (item) {
+    _rowClasses(item) {
       if (this.highlightedFile && item.id === this.highlightedFile.id) {
         return 'file-row oc-background-selected'
       }
       return 'file-row'
     },
-    selectRow (item, event) {
+    selectRow(item, event) {
       if (!this.selectableRow) return
 
       if (item.status && (item.status === 1 || item.status === 2)) return
@@ -267,12 +305,12 @@ export default {
       this.setHighlightedFile(item)
     },
 
-    toggleFileSelect (item) {
+    toggleFileSelect(item) {
       this.toggleFileSelection(item)
       this.$emit('toggle', item)
     },
 
-    toggleAll () {
+    toggleAll() {
       if (this.selectedFiles.length && this.selectedFiles.length === this.fileData.length) {
         this.resetFileSelection()
       } else {
@@ -285,7 +323,7 @@ export default {
       }
     },
 
-    toggleRowActionsDropdown (item) {
+    toggleRowActionsDropdown(item) {
       if (item === this.rowActionsItem) {
         this.hideRowActionsDropdown()
         return
@@ -296,13 +334,13 @@ export default {
       this.rowActions = this.$_enabledActions(item)
     },
 
-    hideRowActionsDropdown () {
+    hideRowActionsDropdown() {
       this.rowActionsDisplayed = false
       this.rowActionsItem = {}
       this.rowActions = []
     },
 
-    actionsDropdownButtonId (id, active) {
+    actionsDropdownButtonId(id, active) {
       if (active) {
         return `files-file-list-action-button-${id}-active`
       }
@@ -310,7 +348,7 @@ export default {
       return `files-file-list-action-button-${id}`
     },
 
-    $_resizeHeader () {
+    $_resizeHeader() {
       this.$nextTick(() => {
         const headerRow = this.$refs.headerRow
         const firstRow = this.$refs.firstRow

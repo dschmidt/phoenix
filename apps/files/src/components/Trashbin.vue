@@ -3,54 +3,76 @@
     <div class="uk-overflow-auto uk-height-1-1">
       <file-list
         id="files-list"
-        :fileData="fileData"
+        :file-data="fileData"
         :loading="loadingFolder"
         :actions="actions"
-        :isActionEnabled="isActionEnabled"
-        :selectableRow="false"
+        :is-action-enabled="isActionEnabled"
+        :selectable-row="false"
       >
         <template #headerColumns>
           <div class="uk-text-truncate uk-text-meta uk-width-expand">
-            <sortable-column-header @click="toggleSort('name')" :aria-label="$gettext('Sort files by name')" :is-active="fileSortField == 'name'" :is-desc="fileSortDirectionDesc">
+            <sortable-column-header
+              :aria-label="$gettext('Sort files by name')"
+              :is-active="fileSortField == 'name'"
+              :is-desc="fileSortDirectionDesc"
+              @click="toggleSort('name')"
+            >
               <translate translate-context="Name column in files table">Name</translate>
             </sortable-column-header>
           </div>
           <div
-            :class="{ 'uk-visible@s' : !_sidebarOpen, 'uk-hidden'  : _sidebarOpen }"
+            :class="{ 'uk-visible@s': !_sidebarOpen, 'uk-hidden': _sidebarOpen }"
             class="uk-text-nowrap uk-text-meta uk-width-small"
           >
             <sortable-column-header
               class="uk-align-right uk-margin-right"
-              @click="toggleSort('deleteTimestampMoment')"
               :aria-label="$gettext('Sort files by deletion time')"
               :is-active="fileSortField == 'deleteTimestampMoment'"
               :is-desc="fileSortDirectionDesc"
+              @click="toggleSort('deleteTimestampMoment')"
             >
-              <translate translate-context="Deletion time column in trashbin files table">Deletion Time</translate>
+              <translate translate-context="Deletion time column in trashbin files table"
+                >Deletion Time</translate
+              >
             </sortable-column-header>
           </div>
         </template>
         <template #rowColumns="{ item }">
           <div class="uk-text-truncate uk-width-expand">
             <oc-file
-              :name="$_ocTrashbin_fileName(item)" :extension="item.extension" class="file-row-name" :icon="fileTypeIcon(item)"
-              :filename="item.name" :key="item.id"/>
+              :key="item.id"
+              :name="$_ocTrashbin_fileName(item)"
+              :extension="item.extension"
+              class="file-row-name"
+              :icon="fileTypeIcon(item)"
+              :filename="item.name"
+            />
           </div>
-          <div class="uk-text-meta uk-text-nowrap uk-width-small uk-text-right" :class="{ 'uk-visible@s' : !_sidebarOpen, 'uk-hidden'  : _sidebarOpen }">
+          <div
+            class="uk-text-meta uk-text-nowrap uk-width-small uk-text-right"
+            :class="{ 'uk-visible@s': !_sidebarOpen, 'uk-hidden': _sidebarOpen }"
+          >
             {{ formDateFromNow(item.deleteTimestamp) }}
           </div>
         </template>
         <template #noContentMessage>
           <no-content-message icon="delete">
-            <template #message><span v-translate>Your trash bin is empty.</span></template>
+            <template #message
+              ><span v-translate>Your trash bin is empty.</span></template
+            >
           </no-content-message>
         </template>
       </file-list>
     </div>
-    <oc-dialog-prompt name="delete-file-confirmation-dialog" :oc-active="trashbinDeleteMessage !== ''"
-                      :oc-content="trashbinDeleteMessage" :oc-has-input="false" :ocTitle="_deleteDialogTitle"
-                      ocConfirmId="oc-dialog-delete-confirm" @oc-confirm="$_ocTrashbin_clearTrashbinConfirmation"
-                      @oc-cancel="$_ocTrashbin_cancelTrashbinConfirmation"
+    <oc-dialog-prompt
+      name="delete-file-confirmation-dialog"
+      :oc-active="trashbinDeleteMessage !== ''"
+      :oc-content="trashbinDeleteMessage"
+      :oc-has-input="false"
+      :oc-title="_deleteDialogTitle"
+      oc-confirm-id="oc-dialog-delete-confirm"
+      @oc-confirm="$_ocTrashbin_clearTrashbinConfirmation"
+      @oc-cancel="$_ocTrashbin_cancelTrashbinConfirmation"
     />
   </div>
 </template>
@@ -73,12 +95,10 @@ export default {
     SortableColumnHeader
   },
 
-  mixins: [
-    Mixins
-  ],
+  mixins: [Mixins],
   props: ['fileData'],
 
-  data () {
+  data() {
     return {
       queue: new PQueue({ concurrency: 4 }),
       ocDialogIsOpen: false
@@ -88,7 +108,7 @@ export default {
   computed: {
     ...mapGetters('Files', ['loadingFolder', 'selectedFiles', 'trashbinDeleteMessage']),
 
-    _deleteDialogTitle () {
+    _deleteDialogTitle() {
       const files = this.selectedFiles
       let translated
 
@@ -101,7 +121,7 @@ export default {
       return this.$gettextInterpolate(translated, { numberOfFiles: files.length }, false)
     },
 
-    actions () {
+    actions() {
       return [
         {
           icon: 'restore',
@@ -119,37 +139,47 @@ export default {
     }
   },
 
-  beforeMount () {
+  beforeMount() {
     this.$_ocTrashbin_getFiles()
   },
 
   methods: {
-    ...mapActions('Files', ['loadTrashbin', 'addFileSelection', 'removeFileSelection', 'resetFileSelection', 'setTrashbinDeleteMessage', 'removeFilesFromTrashbin']),
+    ...mapActions('Files', [
+      'loadTrashbin',
+      'addFileSelection',
+      'removeFileSelection',
+      'resetFileSelection',
+      'setTrashbinDeleteMessage',
+      'removeFilesFromTrashbin'
+    ]),
     ...mapActions(['showMessage']),
 
-    $_ocTrashbin_getFiles () {
+    $_ocTrashbin_getFiles() {
       this.loadTrashbin({
         client: this.$client,
         $gettext: this.$gettext
       })
     },
-    $_ocTrashbin_deleteFile (item) {
+    $_ocTrashbin_deleteFile(item) {
       this.ocDialogIsOpen = true
       this.resetFileSelection()
       this.addFileSelection(item)
 
-      this.setTrashbinDeleteMessage(this.$gettext('This item will be deleted permanently. You can’t undo this action.'))
+      this.setTrashbinDeleteMessage(
+        this.$gettext('This item will be deleted permanently. You can’t undo this action.')
+      )
     },
 
-    $_ocTrashbin_clearTrashbinConfirmation (files = this.selectedFiles) {
+    $_ocTrashbin_clearTrashbinConfirmation(files = this.selectedFiles) {
       // TODO: use clear all if all files are selected
       this.ocDialogIsOpen = false
       const deleteOps = []
 
       const self = this
-      function deleteFile (file) {
+      function deleteFile(file) {
         return () => {
-          return self.$client.fileTrash.clearTrashBin(file.id)
+          return self.$client.fileTrash
+            .clearTrashBin(file.id)
             .then(() => {
               self.$_ocTrashbin_removeFileFromList([file])
               const translated = self.$gettext('%{file} was successfully deleted')
@@ -185,15 +215,16 @@ export default {
       })
     },
 
-    $_ocTrashbin_cancelTrashbinConfirmation () {
+    $_ocTrashbin_cancelTrashbinConfirmation() {
       this.setTrashbinDeleteMessage('')
       this.ocDialogIsOpen = false
     },
 
-    $_ocTrashbin_restoreFile (file) {
+    $_ocTrashbin_restoreFile(file) {
       this.resetFileSelection()
       this.addFileSelection(file)
-      this.$client.fileTrash.restore(file.id, file.originalLocation)
+      this.$client.fileTrash
+        .restore(file.id, file.originalLocation)
         .then(() => {
           this.$_ocTrashbin_removeFileFromList([file])
           const translated = this.$gettext('%{file} was restored successfully')
@@ -212,11 +243,11 @@ export default {
       this.resetFileSelection()
     },
 
-    $_ocTrashbin_removeFileFromList (files) {
+    $_ocTrashbin_removeFileFromList(files) {
       this.removeFilesFromTrashbin(files)
     },
 
-    $_ocTrashbin_fileName (item) {
+    $_ocTrashbin_fileName(item) {
       if (item && item.originalLocation) {
         const pathSplit = item.originalLocation.split('/')
         if (pathSplit.length === 2) return `${pathSplit[pathSplit.length - 2]}/${item.basename}`
@@ -225,7 +256,7 @@ export default {
       return item.basename
     },
 
-    isActionEnabled (item, action) {
+    isActionEnabled(item, action) {
       return action.isEnabled(item, this.parentFolder)
     }
   }

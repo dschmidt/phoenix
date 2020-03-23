@@ -31,10 +31,10 @@ module.exports = {
    * @param permissionsString string of permissions separated by comma. For valid permissions see this.PERMISSION_TYPES
    * @returns {number} a number the OCS sharing API understands see https://doc.owncloud.com/server/developer_manual/core/apis/ocs-share-api.html
    */
-  humanReadablePermissionsToBitmask: function (permissionsString) {
+  humanReadablePermissionsToBitmask: function(permissionsString) {
     let permissionBitMask = 0
     let humanReadablePermissions = permissionsString.split(',')
-    humanReadablePermissions = humanReadablePermissions.map(function (s) {
+    humanReadablePermissions = humanReadablePermissions.map(function(s) {
       return String.prototype.trim.apply(s)
     })
     for (var i = 0; i < humanReadablePermissions.length; i++) {
@@ -51,7 +51,7 @@ module.exports = {
    * @param {string} shareTypeString
    * @returns {number}
    */
-  humanReadableShareTypeToNumber: function (shareTypeString) {
+  humanReadableShareTypeToNumber: function(shareTypeString) {
     shareTypeString = shareTypeString.trim()
     if (!(shareTypeString in this.SHARE_TYPES)) {
       throw Error('Invalid share type: ' + shareTypeString)
@@ -63,13 +63,16 @@ module.exports = {
    * @param {string} dateString
    * @returns {string}
    */
-  calculateDate: function (dateString) {
+  calculateDate: function(dateString) {
     if (dateString.startsWith('+') || dateString.startsWith('-')) {
       dateString = parseInt(dateString)
       const date = new Date()
       date.setDate(date.getDate() + dateString)
-      dateString = date.getFullYear() + '-' +
-        String((date.getMonth() + 1)).padStart(2, '0') + '-' +
+      dateString =
+        date.getFullYear() +
+        '-' +
+        String(date.getMonth() + 1).padStart(2, '0') +
+        '-' +
         String(date.getDate()).padStart(2, '0') +
         ' 00:00:00'
     }
@@ -83,32 +86,44 @@ module.exports = {
    *
    * @returns {Promise<unknown>}
    */
-  assertUserHasShareWithDetails: function (user, expectedDetailsTable, filters = {}) {
+  assertUserHasShareWithDetails: function(user, expectedDetailsTable, filters = {}) {
     codify.replaceInlineTable(expectedDetailsTable)
     const headers = httpHelper.createOCSRequestHeaders(user)
 
     const sharingHelper = this
-    const apiURL = new URL(join(client.globals.backend_url, '/ocs/v2.php/apps/files_sharing/api/v1/shares'))
+    const apiURL = new URL(
+      join(client.globals.backend_url, '/ocs/v2.php/apps/files_sharing/api/v1/shares')
+    )
     apiURL.search = new URLSearchParams({ format: 'json', ...filters }).toString()
 
     return fetch(apiURL, { method: 'GET', headers: headers })
       .then(res => res.json())
-      .then(function (sharesResult) {
-        httpHelper.checkOCSStatus(sharesResult, 'Could not get shares. Message: ' + sharesResult.ocs.meta.message)
+      .then(function(sharesResult) {
+        httpHelper.checkOCSStatus(
+          sharesResult,
+          'Could not get shares. Message: ' + sharesResult.ocs.meta.message
+        )
         const shares = sharesResult.ocs.data
         let found
         for (const share of shares) {
           found = true
           for (const expectedDetail of expectedDetailsTable.hashes()) {
             if (expectedDetail.field === 'permissions') {
-              expectedDetail.value = sharingHelper.humanReadablePermissionsToBitmask(expectedDetail.value).toString()
+              expectedDetail.value = sharingHelper
+                .humanReadablePermissionsToBitmask(expectedDetail.value)
+                .toString()
             } else if (expectedDetail.field === 'share_type') {
-              expectedDetail.value = sharingHelper.humanReadableShareTypeToNumber(expectedDetail.value).toString()
+              expectedDetail.value = sharingHelper
+                .humanReadableShareTypeToNumber(expectedDetail.value)
+                .toString()
             } else if (expectedDetail.field === 'expiration') {
               expectedDetail.value = sharingHelper.calculateDate(expectedDetail.value)
             }
 
-            if (!(expectedDetail.field in share) || share[expectedDetail.field].toString() !== expectedDetail.value) {
+            if (
+              !(expectedDetail.field in share) ||
+              share[expectedDetail.field].toString() !== expectedDetail.value
+            ) {
               found = false
               break
             }
@@ -118,7 +133,9 @@ module.exports = {
           }
         }
         assert.strictEqual(
-          found, true, 'could not find expected share in "' + JSON.stringify(sharesResult, null, 2) + '"'
+          found,
+          true,
+          'could not find expected share in "' + JSON.stringify(sharesResult, null, 2) + '"'
         )
         return this
       })
@@ -130,10 +147,13 @@ module.exports = {
    * @param {string} linkCreator link creator
    * @return {Promise<Object>} last share token
    */
-  fetchLastPublicLinkShare: async function (linkCreator) {
+  fetchLastPublicLinkShare: async function(linkCreator) {
     const self = this
     const headers = httpHelper.createOCSRequestHeaders(linkCreator)
-    const apiURL = join(client.globals.backend_url, '/ocs/v2.php/apps/files_sharing/api/v1/shares?format=json')
+    const apiURL = join(
+      client.globals.backend_url,
+      '/ocs/v2.php/apps/files_sharing/api/v1/shares?format=json'
+    )
     let lastShareToken
     let lastShare
     await fetch(apiURL, {
@@ -141,8 +161,11 @@ module.exports = {
       headers: headers
     })
       .then(res => res.json())
-      .then(function (sharesResult) {
-        httpHelper.checkOCSStatus(sharesResult, 'Could not get shares. Message: ' + sharesResult.ocs.meta.message)
+      .then(function(sharesResult) {
+        httpHelper.checkOCSStatus(
+          sharesResult,
+          'Could not get shares. Message: ' + sharesResult.ocs.meta.message
+        )
         const shares = sharesResult.ocs.data
         let lastFoundShareId = 0
         for (const share of shares) {
@@ -153,7 +176,9 @@ module.exports = {
           }
         }
         if (lastShareToken === null) {
-          throw Error('Could not find public shares. All shares: ' + JSON.stringify(shares, null, 2))
+          throw Error(
+            'Could not find public shares. All shares: ' + JSON.stringify(shares, null, 2)
+          )
         }
       })
     return lastShare
@@ -164,16 +189,22 @@ module.exports = {
    * @param sharer user whose all public links are to be fetched
    * @returns {Object<[]>}
    */
-  getAllPublicLinkShares: async function (sharer) {
+  getAllPublicLinkShares: async function(sharer) {
     const headers = httpHelper.createOCSRequestHeaders(sharer)
     const data = []
-    const apiURL = join(client.globals.backend_url, '/ocs/v2.php/apps/files_sharing/api/v1/shares?&format=json')
+    const apiURL = join(
+      client.globals.backend_url,
+      '/ocs/v2.php/apps/files_sharing/api/v1/shares?&format=json'
+    )
     const response = await fetch(apiURL, {
       method: 'GET',
       headers: headers
     })
     const jsonResponse = await response.json()
-    httpHelper.checkOCSStatus(jsonResponse, 'Could not get shares. Message: ' + jsonResponse.ocs.meta.message)
+    httpHelper.checkOCSStatus(
+      jsonResponse,
+      'Could not get shares. Message: ' + jsonResponse.ocs.meta.message
+    )
     for (const share of jsonResponse.ocs.data) {
       if (share.share_type === this.SHARE_TYPES.public_link) {
         data.push(share)
@@ -187,7 +218,7 @@ module.exports = {
    * @param {boolean} sharedWithUser
    * @returns {Promise<[*]>}
    */
-  getAllShares: function (user, sharedWithUser = false) {
+  getAllShares: function(user, sharedWithUser = false) {
     const headers = httpHelper.createOCSRequestHeaders(user)
     const params = new URLSearchParams()
     if (sharedWithUser === true) {
@@ -195,13 +226,15 @@ module.exports = {
     }
     params.set('format', 'json')
     params.set('state', 'all')
-    const apiURL = join(client.globals.backend_url,
-      '/ocs/v2.php/apps/files_sharing/api/v1/shares', `?${params.toString()}`)
-    return fetch(apiURL,
-      {
-        method: 'GET',
-        headers: headers
-      })
+    const apiURL = join(
+      client.globals.backend_url,
+      '/ocs/v2.php/apps/files_sharing/api/v1/shares',
+      `?${params.toString()}`
+    )
+    return fetch(apiURL, {
+      method: 'GET',
+      headers: headers
+    })
       .then(res => {
         httpHelper.checkStatus(res, 'The response status is not the expected value')
         return res.json()
@@ -210,10 +243,10 @@ module.exports = {
         return res.ocs.data
       })
   },
-  getAllSharesSharedWithUser: function (user) {
+  getAllSharesSharedWithUser: function(user) {
     return this.getAllShares(user, true)
   },
-  getAllSharesSharedByUser: function (user) {
+  getAllSharesSharedByUser: function(user) {
     return this.getAllShares(user)
   },
 
@@ -225,12 +258,14 @@ module.exports = {
    * @param {string} user
    * @param {string} sharer
    */
-  declineShare: async function (filename, user, sharer) {
+  declineShare: async function(filename, user, sharer) {
     const allShares = await this.getAllSharesSharedWithUser(user)
-    const elementsToDecline = allShares.filter((element) => {
-      return element.state === this.SHARE_STATE.pending &&
+    const elementsToDecline = allShares.filter(element => {
+      return (
+        element.state === this.SHARE_STATE.pending &&
         normalize(element.path) === filename &&
         element.uid_owner === sharer
+      )
     })
     if (elementsToDecline.length < 1) {
       throw new Error('Could not find the share to be declined')
@@ -238,20 +273,21 @@ module.exports = {
     for (const element of elementsToDecline) {
       const shareID = element.id
       const headers = httpHelper.createOCSRequestHeaders(user)
-      const apiURL = join(client.globals.backend_url,
+      const apiURL = join(
+        client.globals.backend_url,
         '/ocs/v2.php/apps/files_sharing/api/v1/shares/pending/',
         shareID,
         '?format=json'
       )
-      return fetch(apiURL,
-        {
-          method: 'DELETE',
-          headers: headers
-        })
+      return fetch(apiURL, {
+        method: 'DELETE',
+        headers: headers
+      })
         .then(res => {
           res = httpHelper.checkStatus(res, 'The response status is not the expected value')
           return res.json()
-        }).then(res => {
+        })
+        .then(res => {
           httpHelper.checkOCSStatus(res, 'Could not perform the decline action')
         })
     }
@@ -265,12 +301,14 @@ module.exports = {
    * @param {string} user
    * @param {string} sharer
    */
-  acceptShare: async function (filename, user, sharer) {
+  acceptShare: async function(filename, user, sharer) {
     const allShares = await this.getAllSharesSharedWithUser(user)
-    const elementsToAccept = allShares.filter((element) => {
-      return element.state === this.SHARE_STATE.pending &&
+    const elementsToAccept = allShares.filter(element => {
+      return (
+        element.state === this.SHARE_STATE.pending &&
         element.path.slice(1) === filename &&
         element.uid_owner === sharer
+      )
     })
     if (elementsToAccept.length < 1) {
       throw new Error('Could not find the share to be accepted')
@@ -278,20 +316,21 @@ module.exports = {
     for (const element of elementsToAccept) {
       const shareID = element.id
       const headers = httpHelper.createOCSRequestHeaders(user)
-      const apiURL = join(client.globals.backend_url,
+      const apiURL = join(
+        client.globals.backend_url,
         '/ocs/v2.php/apps/files_sharing/api/v1/shares/pending/',
         shareID,
         '?format=json'
       )
-      return fetch(apiURL,
-        {
-          method: 'POST',
-          headers: headers
-        })
+      return fetch(apiURL, {
+        method: 'POST',
+        headers: headers
+      })
         .then(res => {
           res = httpHelper.checkStatus(res, 'The response status is not the expected value')
           return res.json()
-        }).then(res => {
+        })
+        .then(res => {
           httpHelper.checkOCSStatus(res, 'Could not perform the accept action')
         })
     }
@@ -305,18 +344,18 @@ module.exports = {
    * @param {string} expectedDetails.expireDate - expire date for public link share in format 'YYYY-MM-DD'
    * @returns {Promise<void>}
    */
-  assertUserLastPublicShareDetails: async function (linkCreator, expectedDetails) {
+  assertUserLastPublicShareDetails: async function(linkCreator, expectedDetails) {
     const lastShare = await this.fetchLastPublicLinkShare(linkCreator)
     if (lastShare.share_type === this.SHARE_TYPES.public_link) {
       const regDate = lastShare.expiration.split(' ')[0]
       if (expectedDetails.token) {
-        assert.strictEqual(
-          lastShare.token, expectedDetails.token, 'Token Missmatch' + lastShare
-        )
+        assert.strictEqual(lastShare.token, expectedDetails.token, 'Token Missmatch' + lastShare)
       }
       if (expectedDetails.expireDate) {
         assert.strictEqual(
-          regDate, expectedDetails.expireDate, 'Expiry Date Missmatch: ' + lastShare
+          regDate,
+          expectedDetails.expireDate,
+          'Expiry Date Missmatch: ' + lastShare
         )
       }
     } else {

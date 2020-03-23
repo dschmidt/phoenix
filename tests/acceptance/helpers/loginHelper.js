@@ -1,4 +1,10 @@
-const { client, createSession, closeSession, startWebDriver, stopWebDriver } = require('nightwatch-api')
+const {
+  client,
+  createSession,
+  closeSession,
+  startWebDriver,
+  stopWebDriver
+} = require('nightwatch-api')
 const userSettings = require('./userSettings')
 
 module.exports = {
@@ -7,8 +13,11 @@ module.exports = {
    * @param {userId} userId
    * @param {password} [password=null] - If not passed, default password for given `userId` will be used
    */
-  loginAsUser: async function (userId, password = null) {
-    await client.page.loginPage().navigate().authenticate()
+  loginAsUser: async function(userId, password = null) {
+    await client.page
+      .loginPage()
+      .navigate()
+      .authenticate()
 
     password = password || userSettings.getPasswordForUser(userId)
     if (client.globals.ocis) {
@@ -18,8 +27,8 @@ module.exports = {
       await client.page.ownCloudLoginPage().login(userId, password)
       await client.page.ownCloudAuthorizePage().authorize()
     }
-    return client
-      .page.phoenixPage()
+    return client.page
+      .phoenixPage()
       .waitForElementVisible('@appContainer')
       .then(() => {
         client.globals.currentUser = userId
@@ -30,7 +39,7 @@ module.exports = {
    *
    * @param {string} userId
    */
-  reLoginAsUser: async function (userId) {
+  reLoginAsUser: async function(userId) {
     let env = 'local'
     if (process.env.DRONE) {
       env = 'drone'
@@ -42,7 +51,7 @@ module.exports = {
     return this.loginAsUser(userId)
   },
 
-  logout: function (userId) {
+  logout: function(userId) {
     const phoenixPage = client.page.phoenixPage()
     return phoenixPage
       .navigate()

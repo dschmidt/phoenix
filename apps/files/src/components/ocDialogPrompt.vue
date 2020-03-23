@@ -1,29 +1,35 @@
 <template>
-  <oc-dialog :name="name" v-model="ocActive" :title="ocTitle">
+  <oc-dialog v-model="ocActive" :name="name" :title="ocTitle">
     <template slot="content">
-      <oc-alert v-if="ocError" class="oc-dialog-prompt-alert" :noClose="true" variation="danger">
+      <oc-alert v-if="ocError" class="oc-dialog-prompt-alert" :no-close="true" variation="danger">
         {{ ocError }}
       </oc-alert>
       <span v-if="ocContent" class="uk-text-break">{{ ocContent }}</span>
-      <oc-text-input v-if="ocHasInput"
+      <oc-text-input
+        v-if="ocHasInput"
+        :id="ocInputId"
+        ref="input"
+        v-model="inputValue"
         :disabled="ocLoading"
         :placeholder="ocInputPlaceholder"
         :label="ocInputLabel"
         autofocus
-        :id="ocInputId"
-        v-model="inputValue"
-        ref="input"
         @keydown.enter.native="onConfirm"
       ></oc-text-input>
       <oc-loader v-if="ocLoading"></oc-loader>
     </template>
     <template slot="footer">
-        <oc-button :id="ocCancelId" :disabled="ocLoading" @click.stop="onCancel">{{ _ocCancelText }}</oc-button>
-        <oc-button :disabled="ocLoading || ocError !== null || inputValue === '' || clicked"
-               :id="ocConfirmId"
-               ref="confirmButton"
-               :autofocus="!ocHasInput"
-               @click.stop="onConfirm">{{ _ocConfirmText }}</oc-button>
+      <oc-button :id="ocCancelId" :disabled="ocLoading" @click.stop="onCancel">{{
+        _ocCancelText
+      }}</oc-button>
+      <oc-button
+        :id="ocConfirmId"
+        ref="confirmButton"
+        :disabled="ocLoading || ocError !== null || inputValue === '' || clicked"
+        :autofocus="!ocHasInput"
+        @click.stop="onConfirm"
+        >{{ _ocConfirmText }}</oc-button
+      >
     </template>
   </oc-dialog>
 </template>
@@ -64,21 +70,21 @@ export default {
     clicked: false
   }),
   computed: {
-    _ocConfirmText () {
+    _ocConfirmText() {
       return this.ocConfirmText ? this.ocConfirmText : this.$gettext('Ok')
     },
-    _ocCancelText () {
+    _ocCancelText() {
       return this.ocCancelText ? this.ocConfirmText : this.$gettext('Cancel')
     }
   },
   watch: {
-    value () {
+    value() {
       this.inputValue = this.value
     },
-    inputValue () {
+    inputValue() {
       this.$emit('input', this.inputValue)
     },
-    ocActive (isActive) {
+    ocActive(isActive) {
       this.clicked = false
       this.inputValue = this.value
 
@@ -93,14 +99,14 @@ export default {
       })
     }
   },
-  created () {
+  created() {
     this.inputValue = this.value
   },
   methods: {
-    onCancel () {
+    onCancel() {
       this.$emit('oc-cancel')
     },
-    onConfirm () {
+    onConfirm() {
       if (!this.ocError && this.inputValue !== '') {
         this.clicked = true
         this.$emit('oc-confirm', this.inputValue)

@@ -1,11 +1,11 @@
 <template>
   <file-list
-    :fileData="fileData"
     id="files-list"
+    :file-data="fileData"
     :loading="loadingFolder"
     :actions="actions"
-    :compactMode="_sidebarOpen"
-    :isActionEnabled="isActionEnabled"
+    :compact-mode="_sidebarOpen"
+    :is-action-enabled="isActionEnabled"
   >
     <template #headerColumns>
       <div v-if="!publicPage()">
@@ -16,12 +16,12 @@
           class="uk-display-block uk-disabled"
         />
       </div>
-      <div class="uk-text-truncate uk-text-meta uk-width-expand" ref="headerNameColumn">
+      <div ref="headerNameColumn" class="uk-text-truncate uk-text-meta uk-width-expand">
         <sortable-column-header
-          @click="toggleSort('name')"
           :aria-label="$gettext('Sort files by name')"
           :is-active="fileSortField == 'name'"
           :is-desc="fileSortDirectionDesc"
+          @click="toggleSort('name')"
         >
           <translate translate-context="Name column in files table">Name</translate>
         </sortable-column-header>
@@ -32,11 +32,11 @@
         class="uk-text-meta uk-width-small"
       >
         <sortable-column-header
-          @click="toggleSort('size')"
           :aria-label="$gettext('Sort files by size')"
           :is-active="fileSortField == 'size'"
           :is-desc="fileSortDirectionDesc"
           class="uk-align-right"
+          @click="toggleSort('size')"
         >
           <translate translate-context="Size column in files table">Size</translate>
         </sortable-column-header>
@@ -46,11 +46,11 @@
         class="uk-text-nowrap uk-text-meta uk-width-small uk-margin-right"
       >
         <sortable-column-header
-          @click="toggleSort('mdateMoment')"
           :aria-label="$gettext('Sort files by updated time')"
           :is-active="fileSortField == 'mdateMoment'"
           :is-desc="fileSortDirectionDesc"
           class="uk-align-right"
+          @click="toggleSort('mdateMoment')"
         >
           <translate
             translate-context="Short column label in files able for the time at which a file was modified"
@@ -63,24 +63,24 @@
       <div v-if="!publicPage()">
         <oc-star
           class="uk-display-block"
-          @click.native.stop="toggleFileFavorite(item)"
           :shining="item.starred"
+          @click.native.stop="toggleFileFavorite(item)"
         />
       </div>
       <div
-        class="uk-text-truncate uk-width-expand"
         :ref="index === 0 ? 'firstRowNameColumn' : null"
+        class="uk-text-truncate uk-width-expand"
       >
         <oc-file
-          @click.native.stop="
-            item.type === 'folder' ? navigateTo(item.path.substr(1)) : openFileActionBar(item)
-          "
+          :key="item.id"
           :name="$_ocFileName(item)"
           :extension="item.extension"
           class="file-row-name"
           :icon="fileTypeIcon(item)"
           :filename="item.name"
-          :key="item.id"
+          @click.native.stop="
+            item.type === 'folder' ? navigateTo(item.path.substr(1)) : openFileActionBar(item)
+          "
         />
         <oc-spinner
           v-if="actionInProgress(item)"
@@ -90,7 +90,11 @@
         />
       </div>
       <div v-if="!$_isFavoritesList" class="uk-flex uk-flex-middle uk-flex-right">
-        <Indicators :defaultIndicators="indicatorArray(item)" :item="item" @click="$_openSideBar" />
+        <Indicators
+          :default-indicators="indicatorArray(item)"
+          :item="item"
+          @click="$_openSideBar"
+        />
       </div>
       <div
         class="uk-text-meta uk-text-nowrap uk-width-small uk-text-right"
@@ -155,8 +159,8 @@
           </template>
         </span>
         <div
-          class="uk-width-expand oc-align-self-center"
           v-if="quota.definition !== 'default' && quota.definition !== 'none'"
+          class="uk-width-expand oc-align-self-center"
         >
           <oc-progress :value="parseInt(quota.relative)" :max="100" class="uk-margin-remove" />
         </div>

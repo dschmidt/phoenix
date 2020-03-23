@@ -12,19 +12,20 @@ module.exports = {
      * @param {string} elementType
      * @returns {string} file action button selector
      */
-    getFileActionBtnSelector: function (fileName, elementType = 'file') {
-      return this.getFileRowSelectorByFileName(fileName, elementType) +
-        this.api.page.FilesPageElement.fileActionsMenu().elements
-          .fileActionsButtonInFileRow.selector
+    getFileActionBtnSelector: function(fileName, elementType = 'file') {
+      return (
+        this.getFileRowSelectorByFileName(fileName, elementType) +
+        this.api.page.FilesPageElement.fileActionsMenu().elements.fileActionsButtonInFileRow
+          .selector
+      )
     },
     /**
      * @param {string} fileName
      * @return {Promise<*>}
      */
-    openSharingDialog: async function (fileName) {
+    openSharingDialog: async function(fileName) {
       await this.waitForFileVisible(fileName)
-      return this.openFileActionsMenu(fileName)
-        .openCollaboratorsDialog()
+      return this.openFileActionsMenu(fileName).openCollaboratorsDialog()
     },
     /**
      * opens links dialog for given resource
@@ -32,10 +33,11 @@ module.exports = {
      *
      * @return {*}
      */
-    openLinksDialog: function () {
+    openLinksDialog: function() {
       const api = this.api.page.FilesPageElement
       const sidebarLinksTabXpath = api.appSideBar().elements.sidebarLinksTab.selector
-      api.fileActionsMenu()
+      api
+        .fileActionsMenu()
         .openCollaboratorsDialog()
         .useXpath()
         .waitForElementVisible(sidebarLinksTabXpath)
@@ -47,7 +49,7 @@ module.exports = {
      * @param {string} fileName
      * @return {Promise<*>}
      */
-    openPublicLinkDialog: async function (fileName) {
+    openPublicLinkDialog: async function(fileName) {
       await this.waitForFileVisible(fileName)
       await this.openFileActionsMenu(fileName)
       return this.openLinksDialog()
@@ -56,11 +58,9 @@ module.exports = {
      * @param {string} resource
      * @return {Promise<module.exports.commands>}
      */
-    deleteFile: async function (resource) {
+    deleteFile: async function(resource) {
       await this.waitForFileVisible(resource)
-      await this
-        .openFileActionsMenu(resource)
-        .delete()
+      await this.openFileActionsMenu(resource).delete()
       return this
     },
     /**
@@ -69,11 +69,9 @@ module.exports = {
      * @param {boolean} expectToSucceed
      * @return {Promise<module.exports.commands>}
      */
-    renameFile: async function (fromName, toName, expectToSucceed = true) {
+    renameFile: async function(fromName, toName, expectToSucceed = true) {
       await this.waitForFileVisible(fromName)
-      await this
-        .openFileActionsMenu(fromName)
-        .rename(toName, expectToSucceed)
+      await this.openFileActionsMenu(fromName).rename(toName, expectToSucceed)
       return this
     },
     /**
@@ -81,22 +79,18 @@ module.exports = {
      * @param {string} elementType
      * @return {Promise<module.exports.commands>}
      */
-    restoreFile: async function (element, elementType) {
+    restoreFile: async function(element, elementType) {
       await this.waitForFileWithPathVisible(element, elementType)
-      await this
-        .openFileActionsMenu(element, elementType)
-        .restore()
+      await this.openFileActionsMenu(element, elementType).restore()
       return this
     },
     /**
      * @param {string} resource
      * @return {Promise<module.exports.commands>}
      */
-    deleteImmediately: async function (resource) {
+    deleteImmediately: async function(resource) {
       await this.waitForFileVisible(resource)
-      await this
-        .openFileActionsMenu(resource)
-        .deleteResourceImmediately(resource)
+      await this.openFileActionsMenu(resource).deleteResourceImmediately(resource)
       return this
     },
     /**
@@ -104,39 +98,33 @@ module.exports = {
      * @param {string} resource
      * @return {Promise<boolean>}
      */
-    isActionAttributeDisabled: async function (action, resource) {
+    isActionAttributeDisabled: async function(action, resource) {
       await this.waitForFileVisible(resource)
-      return this
-        .openFileActionsMenu(resource)
-        .getActionDisabledAttr('delete')
+      return this.openFileActionsMenu(resource).getActionDisabledAttr('delete')
     },
     /**
      * @param {string} resource
      * @return {Promise<module.exports.commands>}
      */
-    downloadFile: async function (resource) {
+    downloadFile: async function(resource) {
       await this.waitForFileVisible(resource)
-      await this
-        .openFileActionsMenu(resource)
-        .download()
+      await this.openFileActionsMenu(resource).download()
       return this
     },
     /**
      * @param {string} resource
      * @return {Promise<module.exports.commands>}
      */
-    isSharingButtonPresent: async function (resource) {
+    isSharingButtonPresent: async function(resource) {
       await this.waitForFileVisible(resource)
-      await this
-        .openFileActionsMenu(resource)
-        .isSharingBtnPresent()
+      await this.openFileActionsMenu(resource).isSharingBtnPresent()
       return this
     },
     /**
      * @return {Promise<*>}
      */
-    confirmDeletion: async function () {
-      const clickAction = function () {
+    confirmDeletion: async function() {
+      const clickAction = function() {
         return this.initAjaxCounters()
           .waitForElementEnabled('@deleteFileConfirmationBtn')
           .click('@deleteFileConfirmationBtn')
@@ -146,7 +134,7 @@ module.exports = {
             this.api.globals.waitForConditionTimeout,
             this.api.globals.waitForConditionPollInterval,
             false,
-            function () {
+            function() {
               console.log('waited for popup to disappear.')
             }
           )
@@ -176,28 +164,27 @@ module.exports = {
           locateStrategy: this.elements.deleteFileConfirmationDialog.locateStrategy,
           suppressNotFoundErrors: true
         },
-        ({ value }) => { isPopupVisible = value }
+        ({ value }) => {
+          isPopupVisible = value
+        }
       )
       if (isPopupVisible === true) {
         console.log('Retrying again. Popup did not disappear.')
         await clickAction()
       }
 
-      return this.waitForCSSPropertyEquals(
-        {
-          selector: this.elements.deleteFileConfirmationDialog.selector,
-          locateStrategy: this.elements.deleteFileConfirmationBtn.locateStrategy,
-          property: 'display',
-          value: 'none'
-        }
-      )
-        .useCss()
+      return this.waitForCSSPropertyEquals({
+        selector: this.elements.deleteFileConfirmationDialog.selector,
+        locateStrategy: this.elements.deleteFileConfirmationBtn.locateStrategy,
+        property: 'display',
+        value: 'none'
+      }).useCss()
     },
     /**
      *
      * @param {string} folder
      */
-    navigateToFolder: async function (folder) {
+    navigateToFolder: async function(folder) {
       await this.waitForFileVisible(folder)
 
       await this.useXpath()
@@ -214,7 +201,7 @@ module.exports = {
      * @param {string} resource
      * @returns {*}
      */
-    openSideBar: async function (resource) {
+    openSideBar: async function(resource) {
       await this.clickRow(resource)
       return this.api.page.FilesPageElement.appSideBar()
     },
@@ -226,10 +213,9 @@ module.exports = {
      *
      * @returns {*}
      */
-    openFileActionsMenu: function (resource, elementType = 'file') {
+    openFileActionsMenu: function(resource, elementType = 'file') {
       const fileActionsBtnSelector = this.getFileActionBtnSelector(resource, elementType)
-      this
-        .useXpath()
+      this.useXpath()
         .waitForElementVisible(fileActionsBtnSelector)
         .click(fileActionsBtnSelector)
         .useCss()
@@ -240,11 +226,11 @@ module.exports = {
      *
      * @param {string} path
      */
-    markAsFavorite: async function (path) {
+    markAsFavorite: async function(path) {
       await this.waitForFileVisible(path)
 
-      const favoriteIconButton = this.getFileRowSelectorByFileName(path) +
-        this.elements.notMarkedFavoriteInFileRow.selector
+      const favoriteIconButton =
+        this.getFileRowSelectorByFileName(path) + this.elements.notMarkedFavoriteInFileRow.selector
 
       await this.initAjaxCounters()
         .useXpath()
@@ -257,7 +243,7 @@ module.exports = {
     /**
      *
      */
-    checkAllFiles: function () {
+    checkAllFiles: function() {
       return this.initAjaxCounters()
         .waitForElementVisible('@filesTable')
         .waitForElementVisible('@checkBoxAllFiles')
@@ -268,7 +254,7 @@ module.exports = {
      * Restores all the selected files/folders
      *
      */
-    restoreSelected: function () {
+    restoreSelected: function() {
       return this.initAjaxCounters()
         .waitForElementVisible('@restoreSelectedButton')
         .useXpath()
@@ -279,9 +265,9 @@ module.exports = {
     /**
      * @param {string} path
      */
-    unmarkFavorite: async function (path) {
-      const unFavoriteBtn = this.getFileRowSelectorByFileName(path) +
-        this.elements.markedFavoriteInFileRow.selector
+    unmarkFavorite: async function(path) {
+      const unFavoriteBtn =
+        this.getFileRowSelectorByFileName(path) + this.elements.markedFavoriteInFileRow.selector
 
       await this.waitForFileVisible(path)
 
@@ -296,7 +282,7 @@ module.exports = {
     /**
      * @param {string} item the file/folder to click
      */
-    clickRow: async function (item) {
+    clickRow: async function(item) {
       await this.waitForFileVisible(item)
       await this.initAjaxCounters()
         .useXpath()
@@ -315,11 +301,11 @@ module.exports = {
      * @param {string} enableOrDisable
      * @param {string} path
      */
-    toggleFileOrFolderCheckbox: async function (enableOrDisable, path) {
+    toggleFileOrFolderCheckbox: async function(enableOrDisable, path) {
       await this.waitForFileVisible(path)
 
-      const fileCheckbox = this.getFileRowSelectorByFileName(path) +
-        this.elements.checkboxInFileRow.selector
+      const fileCheckbox =
+        this.getFileRowSelectorByFileName(path) + this.elements.checkboxInFileRow.selector
 
       await this.toggleCheckbox(enableOrDisable, fileCheckbox, 'xpath')
 
@@ -331,15 +317,14 @@ module.exports = {
      *
      * @return {Promise<boolean>}
      */
-    isMarkedFavorite: async function (path) {
+    isMarkedFavorite: async function(path) {
       let visible = false
-      const markedFavoriteIcon = this.getFileRowSelectorByFileName(path) +
-        this.elements.markedFavoriteInFileRow.selector
+      const markedFavoriteIcon =
+        this.getFileRowSelectorByFileName(path) + this.elements.markedFavoriteInFileRow.selector
       await this.waitForFileVisible(path)
-      await this.api
-        .element('xpath', markedFavoriteIcon, (result) => {
-          visible = !!result.value.ELEMENT
-        })
+      await this.api.element('xpath', markedFavoriteIcon, result => {
+        visible = !!result.value.ELEMENT
+      })
       return visible
     },
     /**
@@ -348,22 +333,25 @@ module.exports = {
      * @param {string} fileName
      * @param {string} elementType
      */
-    waitForFileVisible: async function (fileName, elementType = 'file') {
+    waitForFileVisible: async function(fileName, elementType = 'file') {
       const linkSelector = this.getFileLinkSelectorByFileName(fileName, elementType)
 
       await this.waitForElementPresent('@filesTableContainer')
       await this.filesListScrollToTop()
       // Find the item in files list if it's not in the view
       await this.findItemInFilesList(fileName)
-      await this
-        .useXpath()
-        .getAttribute(linkSelector, 'filename', function (result) {
+      await this.useXpath()
+        .getAttribute(linkSelector, 'filename', function(result) {
           if (result.value.error) {
             this.assert.fail(result.value.error)
           }
           // using basename because some file lists display the full path while the
           // file name attribute only contains the basename
-          this.assert.strictEqual(result.value, path.basename(fileName), 'displayed file name not as expected')
+          this.assert.strictEqual(
+            result.value,
+            path.basename(fileName),
+            'displayed file name not as expected'
+          )
         })
         .useCss()
       return this
@@ -376,13 +364,12 @@ module.exports = {
      * @param {string} path
      * @param {string} elementType
      */
-    waitForFileWithPathVisible: function (path, elementType = 'file') {
+    waitForFileWithPathVisible: function(path, elementType = 'file') {
       const linkSelector = this.getFileLinkSelectorByFileName(path, elementType)
       const rowSelector = this.getFileRowSelectorByFileName(path, elementType)
-      return this
-        .useXpath()
+      return this.useXpath()
         .waitForElementVisible(rowSelector)
-        .getAttribute(linkSelector, 'innerText', function (result) {
+        .getAttribute(linkSelector, 'innerText', function(result) {
           this.assert.strictEqual(result.value.trim(), path, 'displayed file name not as expected')
         })
         .useCss()
@@ -394,7 +381,7 @@ module.exports = {
      *
      * @returns {string}
      */
-    getFileRowSelectorByFileName: function (fileName, elementType = 'file') {
+    getFileRowSelectorByFileName: function(fileName, elementType = 'file') {
       if (elementType === 'file') {
         const parts = path.parse(fileName)
         // If our file has a extension that starts with space (for eg. "newfile. txt")
@@ -421,9 +408,11 @@ module.exports = {
      * @returns {string}
      */
 
-    getFileLinkSelectorByFileName: function (fileName, elementType) {
-      return this.getFileRowSelectorByFileName(fileName, elementType) +
+    getFileLinkSelectorByFileName: function(fileName, elementType) {
+      return (
+        this.getFileRowSelectorByFileName(fileName, elementType) +
         this.elements.fileLinkInFileRow.selector
+      )
     },
     /**
      * checks whether the element is listed or not on the filesList
@@ -432,29 +421,24 @@ module.exports = {
      * @param {string} elementType
      * @returns {boolean}
      */
-    isElementListed: async function (element, elementType = 'file') {
+    isElementListed: async function(element, elementType = 'file') {
       let isListed = true
-      await this
-        .waitForElementVisible('@filesTable')
+      await this.waitForElementVisible('@filesTable')
         .useXpath()
         .waitForElementNotPresent('@loadingIndicator')
-        .api.elements(
-          'xpath',
-          this.getFileRowSelectorByFileName(element, elementType),
-          (result) => {
-            isListed = result.value.length > 0
-          })
+        .api.elements('xpath', this.getFileRowSelectorByFileName(element, elementType), result => {
+          isListed = result.value.length > 0
+        })
         .useCss()
       return isListed
     },
     /**
      * @returns {Array} array of files/folders element
      */
-    allFileRows: async function () {
+    allFileRows: async function() {
       let returnResult = null
-      await this
-        .waitForElementNotPresent('@filesListProgressBar')
-      await this.api.elements('css selector', this.elements.fileRows, function (result) {
+      await this.waitForElementNotPresent('@filesListProgressBar')
+      await this.api.elements('css selector', this.elements.fileRows, function(result) {
         returnResult = result
       })
       return returnResult
@@ -464,7 +448,7 @@ module.exports = {
      *
      * @return {Boolean} true if the message is visible, false otherwise
      */
-    isNoContentMessageVisible: async function () {
+    isNoContentMessageVisible: async function() {
       let visible = false
       let elementId = null
       await this.waitForElementNotPresent('@filesListProgressBar')
@@ -483,19 +467,17 @@ module.exports = {
       }
       return visible
     },
-    countFilesAndFolders: async function () {
+    countFilesAndFolders: async function() {
       let filesCount = 0
       let foldersCount = 0
 
-      await this.waitForElementVisible('@filesCount')
-        .getText('@filesCount', result => {
-          filesCount = parseInt(result.value, 10)
-        })
+      await this.waitForElementVisible('@filesCount').getText('@filesCount', result => {
+        filesCount = parseInt(result.value, 10)
+      })
 
-      await this.waitForElementVisible('@foldersCount')
-        .getText('@foldersCount', result => {
-          foldersCount = parseInt(result.value, 10)
-        })
+      await this.waitForElementVisible('@foldersCount').getText('@foldersCount', result => {
+        foldersCount = parseInt(result.value, 10)
+      })
 
       return filesCount + foldersCount
     },
@@ -503,7 +485,7 @@ module.exports = {
     /**
      * Find an item in the files list. Scrolls down in case the item is not visible in viewport
      */
-    findItemInFilesList: async function (itemName) {
+    findItemInFilesList: async function(itemName) {
       // Escape double quotes inside of selector
       if (itemName.indexOf('"') > -1) {
         itemName = this.replaceChar(itemName, '"', '\\"')
@@ -511,19 +493,14 @@ module.exports = {
 
       await this.waitForElementVisible('@virtualScrollWrapper')
       await this.api.executeAsync(
-        function (
-          {
-            itemName,
-            scrollWrapperSelector,
-            listHeaderSelector
-          },
-          done
-        ) {
+        function({ itemName, scrollWrapperSelector, listHeaderSelector }, done) {
           const virtualScrollWrapper = document.querySelector(scrollWrapperSelector)
-          const tableHeaderPosition = document.querySelector(listHeaderSelector).getBoundingClientRect().top
+          const tableHeaderPosition = document
+            .querySelector(listHeaderSelector)
+            .getBoundingClientRect().top
           let scrollDistance = virtualScrollWrapper.scrollTop
 
-          function scrollUntilElementVisible () {
+          function scrollUntilElementVisible() {
             const item = document.querySelector(`[filename="${itemName}"]`)
 
             if (item) {
@@ -545,17 +522,21 @@ module.exports = {
 
             scrollDistance += virtualScrollWrapper.clientHeight
             virtualScrollWrapper.scrollTop = scrollDistance
-            setTimeout(function () {
+            setTimeout(function() {
               scrollUntilElementVisible()
             }, 500)
           }
 
           scrollUntilElementVisible()
-        }, [{
-          itemName: itemName,
-          scrollWrapperSelector: this.elements.virtualScrollWrapper.selector,
-          listHeaderSelector: this.elements.filesTableHeader.selector
-        }])
+        },
+        [
+          {
+            itemName: itemName,
+            scrollWrapperSelector: this.elements.virtualScrollWrapper.selector,
+            listHeaderSelector: this.elements.filesTableHeader.selector
+          }
+        ]
+      )
 
       return this
     },
@@ -563,64 +544,70 @@ module.exports = {
     /**
      * Scroll the files list to the beginning
      */
-    filesListScrollToTop: async function () {
+    filesListScrollToTop: async function() {
       await this.waitForElementVisible('@virtualScrollWrapper')
-      await this.api.executeAsync(function (scrollerContainerSelector, done) {
-        const filesListScroll = document.querySelector(scrollerContainerSelector)
-        if (filesListScroll.scrollTop > 0) {
-          filesListScroll.scrollTop = 0
-        }
+      await this.api.executeAsync(
+        function(scrollerContainerSelector, done) {
+          const filesListScroll = document.querySelector(scrollerContainerSelector)
+          if (filesListScroll.scrollTop > 0) {
+            filesListScroll.scrollTop = 0
+          }
 
-        done()
-      }, [this.elements.virtualScrollWrapper.selector])
+          done()
+        },
+        [this.elements.virtualScrollWrapper.selector]
+      )
 
       return this
     },
 
-    getShareIndicatorsForResource: async function (fileName) {
+    getShareIndicatorsForResource: async function(fileName) {
       const resourceRowXpath = this.getFileRowSelectorByFileName(fileName)
-      const shareIndicatorsXpath = resourceRowXpath + this.elements.shareIndicatorsInFileRow.selector
+      const shareIndicatorsXpath =
+        resourceRowXpath + this.elements.shareIndicatorsInFileRow.selector
       const indicators = []
 
       await this.waitForFileVisible(fileName)
 
-      await this
-        .api.elements(
-          this.elements.shareIndicatorsInFileRow.locateStrategy,
-          shareIndicatorsXpath,
-          (result) => {
-            result.value.forEach(element => {
-              return this.api.elementIdAttribute(element.ELEMENT, 'class', (attr) => {
-                if (attr.value.indexOf('uk-invisible') >= 0) {
-                  return
+      await this.api.elements(
+        this.elements.shareIndicatorsInFileRow.locateStrategy,
+        shareIndicatorsXpath,
+        result => {
+          result.value.forEach(element => {
+            return this.api.elementIdAttribute(element.ELEMENT, 'class', attr => {
+              if (attr.value.indexOf('uk-invisible') >= 0) {
+                return
+              }
+              return this.api.elementIdAttribute(element.ELEMENT, 'aria-label', attr => {
+                switch (attr.value) {
+                  case 'Directly shared with collaborators':
+                    indicators.push('user-direct')
+                    break
+                  case 'Shared with collaborators through one of the parent folders':
+                    indicators.push('user-indirect')
+                    break
+                  case 'Directly shared with links':
+                    indicators.push('link-direct')
+                    break
+                  case 'Shared with links through one of the parent folders':
+                    indicators.push('link-indirect')
+                    break
+                  default:
+                    console.warn('Unknown share indicator found: "' + attr + '"')
                 }
-                return this.api.elementIdAttribute(element.ELEMENT, 'aria-label', (attr) => {
-                  switch (attr.value) {
-                    case 'Directly shared with collaborators':
-                      indicators.push('user-direct')
-                      break
-                    case 'Shared with collaborators through one of the parent folders':
-                      indicators.push('user-indirect')
-                      break
-                    case 'Directly shared with links':
-                      indicators.push('link-direct')
-                      break
-                    case 'Shared with links through one of the parent folders':
-                      indicators.push('link-indirect')
-                      break
-                    default:
-                      console.warn('Unknown share indicator found: "' + attr + '"')
-                  }
-                })
               })
             })
-          }
-        )
+          })
+        }
+      )
       return indicators
     },
 
-    setSort: async function (column, isDesc = false) {
-      const columnSelector = util.format(this.elements.filesTableHeaderColumn.selector, xpathHelper.buildXpathLiteral(column))
+    setSort: async function(column, isDesc = false) {
+      const columnSelector = util.format(
+        this.elements.filesTableHeaderColumn.selector,
+        xpathHelper.buildXpathLiteral(column)
+      )
       await this.useXpath()
         .waitForElementVisible(columnSelector)
         .click(columnSelector)
@@ -642,25 +629,24 @@ module.exports = {
       return this.useCss()
     },
 
-    getCollaboratorsForResource: async function (fileName) {
+    getCollaboratorsForResource: async function(fileName) {
       const resourceRowXpath = this.getFileRowSelectorByFileName(fileName)
       const collaboratorsXpath = resourceRowXpath + this.elements.collaboratorsInFileRow.selector
       const collaborators = []
 
       await this.waitForFileVisible(fileName)
 
-      await this
-        .api.elements(
-          this.elements.collaboratorsInFileRow.locateStrategy,
-          collaboratorsXpath,
-          (result) => {
-            result.value.forEach(element => {
-              return this.api.elementIdText(element.ELEMENT, (attr) => {
-                collaborators.push(attr.value)
-              })
+      await this.api.elements(
+        this.elements.collaboratorsInFileRow.locateStrategy,
+        collaboratorsXpath,
+        result => {
+          result.value.forEach(element => {
+            return this.api.elementIdText(element.ELEMENT, attr => {
+              collaborators.push(attr.value)
             })
-          }
-        )
+          })
+        }
+      )
       return collaborators
     },
 
@@ -671,7 +657,7 @@ module.exports = {
      * @param   {string} newChar    New character which will replace target character
      * @returns {string}            String with replaced target character
      */
-    replaceChar: function (string, targetChar, newChar) {
+    replaceChar: function(string, targetChar, newChar) {
       const regex = new RegExp(targetChar, 'g')
       return string.replace(regex, newChar)
     }
@@ -711,10 +697,12 @@ module.exports = {
       locateStrategy: 'xpath'
     },
     fileRowByName: {
-      selector: '//span[@class="oc-file-name"][text()=%s and not(../span[@class="oc-file-extension"])]/../../../../../div[@data-is-visible="true"]'
+      selector:
+        '//span[@class="oc-file-name"][text()=%s and not(../span[@class="oc-file-extension"])]/../../../../../div[@data-is-visible="true"]'
     },
     fileRowByNameAndExtension: {
-      selector: '//span[span/text()=%s and span/text()="%s"]/../../../../div[@data-is-visible="true"]'
+      selector:
+        '//span[span/text()=%s and span/text()="%s"]/../../../../div[@data-is-visible="true"]'
     },
     fileLinkInFileRow: {
       selector: '//span[contains(@class, "file-row-name")]'

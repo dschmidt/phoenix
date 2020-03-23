@@ -3,28 +3,35 @@ import translationsJson from '../l10n/translations'
 
 import Mediaviewer from './Mediaviewer.vue'
 
-const routes = [{
-  path: '/mediaviewer',
-  components: {
-    app: Mediaviewer
-  },
-  name: 'mediaviewer',
-  meta: { auth: false }
-}]
+const routes = [
+  {
+    path: '/mediaviewer',
+    components: {
+      app: Mediaviewer
+    },
+    name: 'mediaviewer',
+    meta: { auth: false }
+  }
+]
 
 const appInfo = {
   name: 'Mediaviewer',
   id: 'mediaviewer',
   icon: 'image',
-  extensions: [{
-    extension: 'png'
-  }, {
-    extension: 'jpg'
-  }, {
-    extension: 'jpeg'
-  }, {
-    extension: 'gif'
-  }]
+  extensions: [
+    {
+      extension: 'png'
+    },
+    {
+      extension: 'jpg'
+    },
+    {
+      extension: 'jpeg'
+    },
+    {
+      extension: 'gif'
+    }
+  ]
 }
 
 const translations = translationsJson

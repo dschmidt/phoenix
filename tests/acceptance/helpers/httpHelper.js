@@ -6,11 +6,10 @@ const _ = require('lodash')
  *
  * @returns {{Authorization: string}}
  */
-exports.createAuthHeader = function (userId) {
+exports.createAuthHeader = function(userId) {
   const password = userSettings.getPasswordForUser(userId)
   return {
-    Authorization: 'Basic ' +
-      Buffer.from(userId + ':' + password).toString('base64')
+    Authorization: 'Basic ' + Buffer.from(userId + ':' + password).toString('base64')
   }
 }
 /**
@@ -19,7 +18,7 @@ exports.createAuthHeader = function (userId) {
  *
  * @returns {{<header>: string}}
  */
-exports.createOCSRequestHeaders = function (userId) {
+exports.createOCSRequestHeaders = function(userId) {
   return {
     ...this.createAuthHeader(userId),
     'OCS-APIREQUEST': true
@@ -33,15 +32,16 @@ exports.createOCSRequestHeaders = function (userId) {
  * @throws Error
  * @returns {node-fetch.Response}
  */
-exports.checkStatus = function (response, message) {
-  if (response.ok) { // response.status >= 200 && response.status < 300
+exports.checkStatus = function(response, message) {
+  if (response.ok) {
+    // response.status >= 200 && response.status < 300
     return response
   } else {
     throw Error(message + ' Status:' + response.status + ' ' + response.statusText)
   }
 }
 
-exports.checkOCSStatus = function (response, message) {
+exports.checkOCSStatus = function(response, message) {
   const statusCode = _.get(response, 'ocs.meta.statuscode')
   if (statusCode === 200) {
     return response
