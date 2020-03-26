@@ -381,10 +381,10 @@ Then('the last uploaded folder should be listed on the webUI', async function ()
   return client
 })
 
-Then('file {string} should not be listed on the webUI', async function (folder) {
-  const state = await client.page.FilesPageElement.filesList().isElementListed(folder, 'file')
+Then('file {string} should not be listed on the webUI', async function (file) {
+  const state = await client.page.FilesPageElement.filesList().isElementListed(file, 'file')
   return client.assert.ok(
-    !state, `Error: Resource ${folder} is listed on the filesList`
+    !state, `Error: Resource ${file} is listed on the filesList`
   )
 })
 
