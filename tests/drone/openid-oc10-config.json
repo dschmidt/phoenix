@@ -1,5 +1,5 @@
 {
-    "server": "http://owncloud",
+    "server": "http://owncloud/",
     "theme": "owncloud",
     "version": "0.1.0",
     "openIdConnect": {

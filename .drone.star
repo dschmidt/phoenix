@@ -403,7 +403,8 @@ def acceptance():
 											buildOcisPhoenix() +
 											konnectdService(True) +
 											ocisPhoenixService(True) +
-											glauthService() if params['openId'] else []
+											glauthService() +
+											sslCertImport() if params['openId'] else []
 										) +
 										fixPermissions()
 									) if not params['runningOnOCIS'] else (
@@ -996,17 +997,34 @@ def setupGraphapiOIdC():
 			'cd /var/www/owncloud/server/',
 			'php occ a:e graphapi',
 			'php occ a:e openidconnect',
+			'php occ config:system:set trusted_domains 2 --value=phoenix',
 			'php occ config:system:set openid-connect provider-url --value="https://konnectd:9130"',
 			'php occ config:system:set openid-connect loginButtonName --value=OpenId-Connect',
-			'php occ config:system:set openid-connect provider --value="http://phoenix:9100"',
 			'php occ config:system:set openid-connect client-id --value=phoenix',
 			'php occ config:system:set cors.allowed-domains 0 --value="http://phoenix:9100"',
 			'php occ config:system:set redis host --value=redis',
 			'php occ config:system:set redis port --value=6379',
 			'php occ config:system:set memcache.local --value="\\\\OC\\\\Memcache\\\\Redis"',
 			'php occ config:system:set phoenix.baseUrl --value="http://phoenix:9100"',
+			'php occ config:system:set debug --value=true --type=bool',
 			'php occ config:list'
 		]
+	}]
+
+def sslCertImport():
+	return [{
+		'name': 'certs',
+		'image': 'owncloudci/php:7.1',
+		'pull': 'always',
+		'commands': [
+			'cd /var/www/owncloud/server/',
+			'ls -la /srv/config/drone',
+			'php occ security:certificates:import /var/www/owncloud/server.crt'
+		],
+		'volumes': [{
+			'name': 'configs',
+			'path': '/srv/config'
+		}],
 	}]
 
 def buildGlauth():
@@ -1098,7 +1116,7 @@ def konnectdService(glauth = False):
 		},
 		'commands': [
 			'cd /var/www/owncloud',
-			'./ocis-konnectd  --log-level debug server debug'
+			'./ocis-konnectd  --log-level debug server debug',
 		],
 		'volumes': [{
 			'name': 'gopath',
@@ -1358,6 +1376,7 @@ def runWebuiAcceptanceTests(suite, alternateSuiteName, filterTags, extraEnvironm
 		'environment': environment,
 		'commands': [
 			'cd /var/www/owncloud/phoenix',
+			'curl http://phoenix:9100/config.json',
 			'timeout 60 bash -c \'while [[ "$(curl -s -o /dev/null -w \'\'%{http_code}\'\' http://phoenix/oidc-callback.html)" != "200" ]]; do sleep 5; done\''
 			if not runningOnOCIS else
 			'timeout 60 bash -c \'while [[ "$(curl -s -o /dev/null -w \'\'%{http_code}\'\' http://phoenix:9100/oidc-callback.html)" != "200" ]]; do sleep 5; done\'',
