@@ -1046,7 +1046,7 @@ def glauthService():
 		},
 		'commands': [
 			'cd /var/www/owncloud',
-			'./ocis-glauth server'
+			'./ocis-glauth --log-level debug server --backend-server http://owncloud/'
 		],
 		'volumes': [{
 			'name': 'gopath',
@@ -1094,11 +1094,11 @@ def konnectdService(glauth = False):
 			'KONNECTD_IDENTIFIER_REGISTRATION_CONF': '/srv/config/drone/identifier-registration.yml',
 			'KONNECTD_ISS': 'https://konnectd:9130',
 			'KONNECTD_TLS': 'true',
-			'LDAP_BINDPW': 'admin',
+			'LDAP_BINDPW': 'admin'
 		},
 		'commands': [
 			'cd /var/www/owncloud',
-			'./ocis-konnectd server'
+			'./ocis-konnectd  --log-level debug server debug'
 		],
 		'volumes': [{
 			'name': 'gopath',
@@ -1141,11 +1141,12 @@ def ocisPhoenixService(glauth = False):
 		'detach': True,
 		'environment' : {
 			'PHOENIX_WEB_CONFIG': '/srv/config/drone/openid-oc10-config.json' if glauth else '/srv/config/drone/ocis-config.json',
-			'PHOENIX_ASSET_PATH': '/var/www/owncloud/phoenix/dist'
+			'PHOENIX_ASSET_PATH': '/var/www/owncloud/phoenix/dist',
+			'PHOENIX_OIDC_CLIENT_ID': 'phoenix'
 		},
 		'commands': [
 			'cd /var/www/owncloud',
-			'./ocis-phoenix server',
+			'./ocis-phoenix --log-level debug server',
 		],
 		'volumes': [{
 			'name': 'gopath',
