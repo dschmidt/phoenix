@@ -1060,7 +1060,6 @@ def glauthService():
 		'environment' : {
 			'GLAUTH_BACKEND_DATASTORE': 'owncloud',
 			'GLAUTH_BACKEND_BASEDN': 'dc=example,dc=com',
-			'GLAUTH_BACKEND_SERVERS': 'http://owncloud',
 		},
 		'commands': [
 			'cd /var/www/owncloud',
@@ -1112,11 +1111,18 @@ def konnectdService(glauth = False):
 			'KONNECTD_IDENTIFIER_REGISTRATION_CONF': '/srv/config/drone/identifier-registration.yml',
 			'KONNECTD_ISS': 'https://konnectd:9130',
 			'KONNECTD_TLS': 'true',
-			'LDAP_BINDPW': 'admin'
+			'LDAP_BINDPW': 'admin',
+			'LDAP_SCOPE': 'sub',
+			'LDAP_LOGIN_ATTRIBUTE': 'uid',
+			'LDAP_EMAIL_ATTRIBUTE': 'mail',
+			'LDAP_NAME_ATTRIBUTE': 'givenName',
+			'LDAP_UUID_ATTRIBUTE': 'uid',
+			'LDAP_UUID_ATTRIBUTE_TYPE': 'text',
+			'LDAP_FILTER': "(objectClass=posixaccount)"
 		},
 		'commands': [
 			'cd /var/www/owncloud',
-			'./ocis-konnectd  --log-level debug server debug',
+			'./ocis-konnectd  --log-level debug server --signing-kid gen1-2020-02-27',
 		],
 		'volumes': [{
 			'name': 'gopath',
