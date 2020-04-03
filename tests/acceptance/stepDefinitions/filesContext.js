@@ -202,8 +202,8 @@ Then('breadcrumb for folder {string} should be displayed on the webUI', function
  */
 const waitBetweenDeleteOperations = async function () {
   const timeSinceLastDelete = Date.now() - timeOfLastDeleteOperation
-  if (timeSinceLastDelete <= 1000) {
-    await client.pause(1000 - timeSinceLastDelete + 1)
+  if (timeSinceLastDelete <= 1200) {
+    await client.pause(1200 - timeSinceLastDelete + 1)
   }
   timeOfLastDeleteOperation = Date.now()
 }
@@ -214,8 +214,8 @@ const waitBetweenDeleteOperations = async function () {
  */
 const waitBetweenFileUploadOperations = async function () {
   const timeSinceLastFileUpload = Date.now() - timeOfLastUploadOperation
-  if (timeSinceLastFileUpload <= 1000) {
-    await client.pause(1001 - timeSinceLastFileUpload)
+  if (timeSinceLastFileUpload <= 1200) {
+    await client.pause(1200 - timeSinceLastFileUpload)
   }
   timeOfLastUploadOperation = Date.now()
 }
@@ -833,8 +833,9 @@ Then('it should not be possible to rename file/folder {string} using the webUI',
   assert.ok(state, `expected property disabled of ${resource} to be 'true' but found ${state}`)
 })
 
-When('the user uploads overwriting file {string} using the webUI', function (file) {
+When('the user uploads overwriting file {string} using the webUI', async function (file) {
   const uploadPath = path.join(client.globals.mountedUploadDir, file)
+  await client.pause(2000)
   return client.page.filesPage().selectFileForUpload(uploadPath)
     .then(() => client.page.filesPage().confirmFileOverwrite())
 })
